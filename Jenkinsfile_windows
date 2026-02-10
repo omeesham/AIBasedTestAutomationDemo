@@ -62,7 +62,7 @@ pipeline {
                         // Archive generated Allure report
                         archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true, fingerprint: true
                         
-                        // Publish Allure HTML Report for web viewing
+                        // Publish Allure HTML Report with proper configuration
                         publishHTML([
                             allowMissing: true,
                             alwaysLinkToLastBuild: true,
@@ -70,8 +70,19 @@ pipeline {
                             reportDir: 'allure-report',
                             reportFiles: 'index.html',
                             reportName: 'Allure Test Report',
-                            reportTitles: 'Allure Test Results'
+                            reportTitles: 'Allure Test Results',
+                            includes: '**/*',
+                            reportGlob: '**/index.html'
                         ])
+                        
+                        // Create a batch file for local Allure report serving
+                        bat '''
+                        echo @echo off > allure-report/serve-report.bat
+                        echo echo Starting Allure report server... >> allure-report/serve-report.bat
+                        echo echo Open http://localhost:8080 in your browser >> allure-report/serve-report.bat
+                        echo npx allure serve allure-results --port 8080 >> allure-report/serve-report.bat
+                        echo pause >> allure-report/serve-report.bat
+                        '''
                     }
                 }
             }
