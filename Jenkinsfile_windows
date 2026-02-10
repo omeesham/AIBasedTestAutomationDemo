@@ -1,8 +1,18 @@
 pipeline {
-    agent any
+    agent {
+        label 'os-worker-windows-ssh-xlarge'
+    }
    
     options {
         timestamps()
+        buildDiscarder(
+            logRotator(
+                artifactDaysToKeepStr: '10',
+                artifactNumToKeepStr: '10',
+                daysToKeepStr: '10',
+                numToKeepStr: '120'
+            )
+        )
     }
 
 
@@ -33,7 +43,46 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'playwright-report/**', fingerprint: true
+                    // Archive test artifacts for download
+                    archiveArtifacts artifacts: 'playwright-report/**, test-results/**, allure-results/**', allowEmptyArchive: true, fingerprint: true
+                }
+            }
+        }
+        
+        stage('Publish Reports') {
+            steps {
+                script {
+                    // Publish Playwright HTML Report for web viewing
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'playwright-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Playwright Test Report',
+                        reportTitles: 'Test Execution Report'
+                    ])
+                    
+                    // Generate and publish Allure report if results exist
+                    if (fileExists('allure-results')) {
+                        bat '''
+                        npx allure generate ./allure-results -o ./allure-report --clean || echo "Allure report generation failed"
+                        '''
+                        
+                        // Archive generated Allure report
+                        archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true, fingerprint: true
+                        
+                        // Publish Allure HTML Report for web viewing
+                        publishHTML([
+                            allowMissing: true,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: 'allure-report',
+                            reportFiles: 'index.html',
+                            reportName: 'Allure Test Report',
+                            reportTitles: 'Allure Test Results'
+                        ])
+                    }
                 }
             }
         }			
