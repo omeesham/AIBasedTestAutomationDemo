@@ -1,30 +1,42 @@
 pipeline {
     agent any
-   
+
     options {
         timestamps()
     }
 
-
-   environment {
-        //.test.env file has all the project and testcase specific environemnt variables
-        PWG_ENV_FILEPATH="resources/test.env"
+    tools {
+        nodejs 'node18'   // Make sure NodeJS plugin is configured with this name
     }
+
+    environment {
+        // Env file used by Playwright
+        PWG_ENV_FILEPATH = "resources/test.env"
+    }
+
     stages {
-        
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 bat '''
+                node -v
+                npm -v
                 npm install
                 '''
             }
         }
-      
+
         stage('Test Execution') {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     bat '''
-                    npx playwright install --with-deps
+                    npx playwright install
                     '''
                     bat '''
                     npx playwright test
@@ -33,59 +45,36 @@ pipeline {
             }
             post {
                 always {
-                    // Archive test artifacts for download
-                    archiveArtifacts artifacts: 'playwright-report/**, test-results/**, allure-results/**', allowEmptyArchive: true, fingerprint: true
+                    // Keep raw results as artifacts (backup/debug only)
+                    archiveArtifacts artifacts: '''
+                        playwright-report/**
+                        allure-results/**
+                        test-results/**
+                    ''', allowEmptyArchive: true, fingerprint: true
                 }
             }
         }
-        
+
         stage('Publish Reports') {
             steps {
-                script {
-                    // Publish Playwright HTML Report for web viewing
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'playwright-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Playwright Test Report',
-                        reportTitles: 'Test Execution Report'
-                    ])
-                    
-                    // Generate and publish Allure report if results exist
-                    if (fileExists('allure-results')) {
-                        bat '''
-                        npx allure generate ./allure-results -o ./allure-report --clean || echo "Allure report generation failed"
-                        '''
-                        
-                        // Archive generated Allure report
-                        archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true, fingerprint: true
-                        
-                        // Publish Allure HTML Report with proper configuration
-                        publishHTML([
-                            allowMissing: true,
-                            alwaysLinkToLastBuild: true,
-                            keepAll: true,
-                            reportDir: 'allure-report',
-                            reportFiles: 'index.html',
-                            reportName: 'Allure Test Report',
-                            reportTitles: 'Allure Test Results',
-                            includes: '**/*',
-                            reportGlob: '**/index.html'
-                        ])
-                        
-                        // Create a batch file for local Allure report serving
-                        bat '''
-                        echo @echo off > allure-report/serve-report.bat
-                        echo echo Starting Allure report server... >> allure-report/serve-report.bat
-                        echo echo Open http://localhost:8080 in your browser >> allure-report/serve-report.bat
-                        echo npx allure serve allure-results --port 8080 >> allure-report/serve-report.bat
-                        echo pause >> allure-report/serve-report.bat
-                        '''
-                    }
-                }
+
+                // ✅ Playwright HTML report (safe to publish)
+                publishHTML([
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'playwright-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Playwright Test Report'
+                ])
+
+                // ✅ Allure report – THIS is the correct way
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: 'allure-results']]
+                ])
             }
-        }			
-    }    
+        }
+    }
 }
