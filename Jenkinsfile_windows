@@ -5,28 +5,15 @@ pipeline {
         timestamps()
     }
 
-    tools {
-        nodejs 'node18'   // Make sure NodeJS plugin is configured with this name
+   environment {
+        //.test.env file has all the project and testcase specific environemnt variables
+        PWG_ENV_FILEPATH="resources/test.env"
     }
-
-    environment {
-        // Env file used by Playwright
-        PWG_ENV_FILEPATH = "resources/test.env"
-    }
-
     stages {
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
 
         stage('Install Dependencies') {
             steps {
                 bat '''
-                node -v
-                npm -v
                 npm install
                 '''
             }
