@@ -42,26 +42,79 @@ pipeline {
             }
         }
 
-        stage('Publish Reports') {
+        stage('Publish HTML Report') {
             steps {
-
-                // ✅ Playwright HTML report (safe to publish)
                 publishHTML([
                     allowMissing: true,
                     alwaysLinkToLastBuild: true,
-                    keepAll: true,
                     reportDir: 'playwright-report',
                     reportFiles: 'index.html',
-                    reportName: 'Playwright Test Report'
+                    reportName: 'Playwright HTML Report'
                 ])
+            }
+        }
 
-                // ✅ Allure report – THIS is the correct way
+        stage('Publish Allure Report') {
+            steps {
                 allure([
                     includeProperties: false,
-                    jdk: '',
                     results: [[path: 'allure-results']]
                 ])
             }
         }
     }
+
+    post {
+        always {
+
+            script {
+                // Load env values
+                def envFile = readFile(env.PWG_ENV_FILEPATH)
+                def envMap = [:]
+                envFile.split('\n').each { line ->
+                    if (line && !line.startsWith('#')) {
+                        def parts = line.split('=')
+                        envMap[parts[0].trim()] = parts[1].trim()
+                    }
+                }
+
+                def projectName = envMap['PROJECT_NAME']
+                def emailTo = envMap['EMAIL_TO']
+                def emailCc = envMap['EMAIL_CC']
+
+                // Parse summary
+                def summaryFile = 'playwright-report/summary.json'
+                def passed = 0, failed = 0
+                if (fileExists(summaryFile)) {
+                    def json = readJSON file: summaryFile
+                    passed = json.passed
+                    failed = json.failed
+                }
+
+                // Zip report
+                bat 'powershell Compress-Archive -Path playwright-report -DestinationPath report.zip -Force'
+
+                // Send email
+                emailext(
+                    subject: "Test Execution Summary",
+                    to: emailTo,
+                    cc: emailCc,
+                    attachmentsPattern: "report.zip",
+                    body: """
+                        <h3>${projectName} - Test Execution Summary</h3>
+                        <p>Passed: ${passed}</p>
+                        <p>Failed: ${failed}</p>
+                        <p><a href='${env.BUILD_URL}'>View Build</a></p>
+                    """,
+                    mimeType: 'text/html'
+                )
+            }
+        }
+    }
+}
+🔥 Why this is “tutorial-style best practice”
+✔ Tool definitions
+tools {
+    nodejs 'node18'
+    allure 'allure'
 }
