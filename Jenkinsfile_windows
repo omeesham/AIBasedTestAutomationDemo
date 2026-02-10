@@ -4,12 +4,21 @@ pipeline {
     options {
         timestamps()
     }
+    
+    tools { 
+        allure 'allure'
+    }
 
    environment {
         //.test.env file has all the project and testcase specific environemnt variables
         PWG_ENV_FILEPATH="resources/test.env"
     }
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Install Dependencies') {
             steps {
@@ -19,30 +28,22 @@ pipeline {
             }
         }
 
-        stage('Test Execution') {
+        stage('Run Playwright Tests') {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                    bat '''
-                    npx playwright install
-                    '''
-                    bat '''
-                    npx playwright test
-                    '''
+                    bat 'npx playwright install'
+                    bat 'npx playwright test'
                 }
             }
             post {
                 always {
-                    // Keep raw results as artifacts (backup/debug only)
-                    archiveArtifacts artifacts: '''
-                        playwright-report/**
-                        allure-results/**
-                        test-results/**
-                    ''', allowEmptyArchive: true, fingerprint: true
+                    archiveArtifacts artifacts: 'playwright-report/**', fingerprint: true
+                    archiveArtifacts artifacts: 'allure-results/**', fingerprint: true
                 }
             }
         }
 
-        stage('Publish HTML Report') {
+        stage('Publish Reports') {
             steps {
                 publishHTML([
                     allowMissing: true,
@@ -51,11 +52,7 @@ pipeline {
                     reportFiles: 'index.html',
                     reportName: 'Playwright HTML Report'
                 ])
-            }
-        }
 
-        stage('Publish Allure Report') {
-            steps {
                 allure([
                     includeProperties: false,
                     results: [[path: 'allure-results']]
@@ -63,58 +60,4 @@ pipeline {
             }
         }
     }
-
-    post {
-        always {
-
-            script {
-                // Load env values
-                def envFile = readFile(env.PWG_ENV_FILEPATH)
-                def envMap = [:]
-                envFile.split('\n').each { line ->
-                    if (line && !line.startsWith('#')) {
-                        def parts = line.split('=')
-                        envMap[parts[0].trim()] = parts[1].trim()
-                    }
-                }
-
-                def projectName = envMap['PROJECT_NAME']
-                def emailTo = envMap['EMAIL_TO']
-                def emailCc = envMap['EMAIL_CC']
-
-                // Parse summary
-                def summaryFile = 'playwright-report/summary.json'
-                def passed = 0, failed = 0
-                if (fileExists(summaryFile)) {
-                    def json = readJSON file: summaryFile
-                    passed = json.passed
-                    failed = json.failed
-                }
-
-                // Zip report
-                bat 'powershell Compress-Archive -Path playwright-report -DestinationPath report.zip -Force'
-
-                // Send email
-                emailext(
-                    subject: "Test Execution Summary",
-                    to: emailTo,
-                    cc: emailCc,
-                    attachmentsPattern: "report.zip",
-                    body: """
-                        <h3>${projectName} - Test Execution Summary</h3>
-                        <p>Passed: ${passed}</p>
-                        <p>Failed: ${failed}</p>
-                        <p><a href='${env.BUILD_URL}'>View Build</a></p>
-                    """,
-                    mimeType: 'text/html'
-                )
-            }
-        }
-    }
-}
-🔥 Why this is “tutorial-style best practice”
-✔ Tool definitions
-tools {
-    nodejs 'node18'
-    allure 'allure'
 }
