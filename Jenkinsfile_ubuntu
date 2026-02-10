@@ -1,0 +1,85 @@
+pipeline {
+    agent {
+        label 'os-worker-windows-ssh-xlarge'
+    }
+   
+    options {
+        timestamps()
+        buildDiscarder(
+            logRotator(
+                artifactDaysToKeepStr: '10',
+                artifactNumToKeepStr: '10',
+                daysToKeepStr: '10',
+                numToKeepStr: '120'
+            )
+        )
+    }
+
+
+   environment {
+        //.test.env file has all the project and testcase specific environemnt variables
+        PWG_ENV_FILEPATH="resources/devl.env"
+    }
+    stages {
+        
+        stage('Install ') {
+            steps {
+                bat '''
+                npm install
+                '''
+            }
+        }
+      
+        stage('RunSendAPIRegressionSuite') {
+            environment{
+                RP_LAUNCH_TAGS="ApplicationGroup--EES (Enterprise Extension Solutions)@@Application--EES - DemoProjects"
+                PWG_ENV_DATA = '${Environment}'
+            }
+            when {
+					expression { return "${RunSendAPIRegressionSuite}" == 'Run'}
+				}
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE'){
+                bat '''
+				npx playwright install 
+				'''
+				bat '''
+			    npx playwright test --grep-invert "smoke-suite"
+			    '''
+              }  
+                
+            }
+			post {
+                always {
+                    archiveArtifacts artifacts: '**\\playwright-report\\index.html**, **\\data\\RequestTrackingIDs.csv'	
+                    
+                }
+            }
+		}
+		stage('RunSendAPISmokeTest') {
+                environment{
+                RP_LAUNCH_TAGS="ApplicationGroup--EES (Enterprise Extension Solutions)@@Application--EES - DemoProjects"
+                PWG_ENV_DATA = '${Environment}'
+                }
+                when {
+					expression { return "${RunSendAPISmokeTest}" == 'Run'}
+				}
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE'){
+                bat '''
+				npx playwright install 
+				'''
+				bat '''
+			    npx playwright test smoke-suite.test.ts
+			    '''
+                }
+            }
+			post {
+                always {
+                    archiveArtifacts artifacts: '**\\playwright-report\\index.html**, **\\data\\RequestTrackingIDs.csv'
+                }
+            }
+		}	
+			
+    }    
+}

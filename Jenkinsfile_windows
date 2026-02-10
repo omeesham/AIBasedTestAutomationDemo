@@ -1,0 +1,51 @@
+pipeline {
+    agent {
+        label 'os-worker-windows-ssh-xlarge'
+    }
+   
+    options {
+        timestamps()
+        buildDiscarder(
+            logRotator(
+                artifactDaysToKeepStr: '10',
+                artifactNumToKeepStr: '10',
+                daysToKeepStr: '10',
+                numToKeepStr: '120'
+            )
+        )
+    }
+
+
+   environment {
+        //.test.env file has all the project and testcase specific environemnt variables
+        PWG_ENV_FILEPATH="resources/test.env"
+    }
+    stages {
+        
+        stage('Install Dependencies') {
+            steps {
+                bat '''
+                npm install
+                '''
+            }
+        }
+      
+        stage('Test Execution') {
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    bat '''
+                    npx playwright install --with-deps
+                    '''
+                    bat '''
+                    npx playwright test
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'playwright-report/**', fingerprint: true
+                }
+            }
+        }			
+    }    
+}
