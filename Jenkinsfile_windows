@@ -5,10 +5,6 @@ pipeline {
         timestamps()
     }
     
-    tools { 
-        allure 'allure'
-    }
-
    environment {
         //.test.env file has all the project and testcase specific environemnt variables
         PWG_ENV_FILEPATH="resources/test.env"
@@ -48,6 +44,7 @@ pipeline {
                 publishHTML([
                     allowMissing: true,
                     alwaysLinkToLastBuild: true,
+                    keepAll: true,   
                     reportDir: 'playwright-report',
                     reportFiles: 'index.html',
                     reportName: 'Playwright HTML Report'
