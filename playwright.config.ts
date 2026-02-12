@@ -20,6 +20,7 @@ export default defineConfig({
   reporter: [["line"],["html"], ["allure-playwright"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
+
     trace: 'on-first-retry',
     headless: false,
     viewport: { width: 1280, height: 720 }
