@@ -380,6 +380,10 @@ test.describe('EspoCRM Lead Management Tests', () => {
     
     // 2. Apply filtering
     await applyDateFilter(page, 'Last 7 Days');
+    
+    // Click on the selectize input with "Last 7 Days" item
+    await page.locator('.selectize-input.items.has-options.full.has-items .item[data-value="lastSevenDays"]').click();
+    
     await expect(page.locator('div').filter({ hasText: 'Actions Remove Merge Mass' }).nth(2)).toBeVisible();
     
     // 2.1 Capture entries with Status = "New"
@@ -560,9 +564,9 @@ test.describe('EspoCRM Lead Management Tests', () => {
     // 4. First click the field container to activate the dropdown
     await page.locator('div.field[data-name="format"]').click();
     
-    // 5. Wait for dropdown to appear and click XLSX option  
-    await page.waitForSelector('.selectize-dropdown-content .option[data-value="xlsx"]', { timeout: 5000 });
-    await page.locator('.selectize-dropdown-content .option[data-value="xlsx"]').click();
+    // 5. Wait for dropdown to appear and click CSV option  
+    await page.waitForSelector('.selectize-dropdown-content .option[data-value="csv"]', { timeout: 5000 });
+    await page.locator('.selectize-dropdown-content .option[data-value="csv"]').click();
     
     // 6. Check the export all fields checkbox
     await page.locator('input[data-name="exportAllFields"].form-checkbox').check();
