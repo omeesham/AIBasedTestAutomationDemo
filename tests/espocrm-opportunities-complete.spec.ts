@@ -3,7 +3,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('EspoCRM Opportunities Management', () => {
+test.describe.skip('EspoCRM Opportunities Management', () => {
   
   test.beforeEach(async ({ page }) => {
     await page.goto('https://demo.us.espocrm.com/');

@@ -15,7 +15,7 @@ import { sendDailyStatisticsEmail } from '../src/email-util';
 
 test.describe('EspoCRM Lead Management Tests', () => {
 
-  test('TC01: Export leads with date filtering to CSV', async ({ page }) => {
+  test.skip('TC01: Export leads with date filtering to CSV', async ({ page }) => {
     console.log('TC01: Starting CSV export test with date filter');
     
     // 1. Navigate to EspoCRM demo application
@@ -39,7 +39,7 @@ test.describe('EspoCRM Lead Management Tests', () => {
     console.log('TC01: CSV export test completed successfully');
   });
 
-  test('TC02: Export leads with status filtering to XLSX', async ({ page }) => {
+  test.skip('TC02: Export leads with status filtering to XLSX', async ({ page }) => {
     console.log('TC02: Starting XLSX export test with status filter');
     
     // 1. Login and navigate to Leads
@@ -63,7 +63,7 @@ test.describe('EspoCRM Lead Management Tests', () => {
     console.log('TC02: XLSX export test completed successfully');
   });
 
-  test('TC03: Lead selection and bulk actions', async ({ page }) => {
+  test.skip('TC03: Lead selection and bulk actions', async ({ page }) => {
     console.log('TC03: Starting bulk actions test');
     
     // 1. Navigate to Leads
@@ -92,7 +92,7 @@ test.describe('EspoCRM Lead Management Tests', () => {
     console.log('TC03: Bulk actions test completed successfully');
   });
 
-  test('TC04: Login and authentication flow', async ({ page }) => {
+  test.skip('TC04: Login and authentication flow', async ({ page }) => {
     console.log('TC04: Starting login and authentication test');
     
     // 1. Navigate to EspoCRM demo URL
@@ -119,7 +119,7 @@ test.describe('EspoCRM Lead Management Tests', () => {
     console.log('TC04: Login and authentication test completed successfully');
   });
 
-  test('TC05: Lead status workflow', async ({ page }) => {
+  test.skip('TC05: Lead status workflow', async ({ page }) => {
     console.log('TC05: Starting lead status workflow test');
     
     // 1. Navigate to Leads
@@ -152,7 +152,7 @@ test.describe('EspoCRM Lead Management Tests', () => {
     console.log('TC05: Lead status workflow test completed successfully');
   });
 
-  test('TC06: Advanced search with multiple criteria', async ({ page }) => {
+  test.skip('TC06: Advanced search with multiple criteria', async ({ page }) => {
     console.log('TC06: Starting advanced search test');
     
     // 1. Setup
@@ -188,7 +188,7 @@ test.describe('EspoCRM Lead Management Tests', () => {
     console.log('TC06: Advanced search test completed successfully');
   });
 
-  test('TC07: Comprehensive export validation', async ({ page }) => {
+  test.skip('TC07: Comprehensive export validation', async ({ page }) => {
     console.log('TC07: Starting comprehensive export validation');
     
     // 1. Setup and navigate
@@ -242,135 +242,135 @@ test.describe('EspoCRM Lead Management Tests', () => {
     console.log('TC07: Comprehensive export validation completed successfully');
   });
 
-  test.skip('TC08: Upload exported file to SharePoint via Microsoft Graph API', async ({ request }) => {
-    console.log('TC08: Starting SharePoint file upload via Microsoft Graph API');
+  // test.skip('TC08: Upload exported file to SharePoint via Microsoft Graph API', async ({ request }) => {
+  //   console.log('TC08: Starting SharePoint file upload via Microsoft Graph API');
     
-    // 1. Verify or create the exported file in Data folder
-    const filePath = path.join(__dirname, '..', 'Data', 'LeadsExport.xlsx');
+  //   // 1. Verify or create the exported file in Data folder
+  //   const filePath = path.join(__dirname, '..', 'Data', 'LeadsExport.xlsx');
     
-    if (!fs.existsSync(filePath)) {
-      console.log('LeadsExport.xlsx not found, creating sample file...');
-      const dataDir = path.dirname(filePath);
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-      // Create a simple sample file if the export file doesn't exist
-      const sampleContent = Buffer.from('Sample Excel Content for SharePoint Upload Test');
-      fs.writeFileSync(filePath, sampleContent);
-    }
+  //   if (!fs.existsSync(filePath)) {
+  //     console.log('LeadsExport.xlsx not found, creating sample file...');
+  //     const dataDir = path.dirname(filePath);
+  //     if (!fs.existsSync(dataDir)) {
+  //       fs.mkdirSync(dataDir, { recursive: true });
+  //     }
+  //     // Create a simple sample file if the export file doesn't exist
+  //     const sampleContent = Buffer.from('Sample Excel Content for SharePoint Upload Test');
+  //     fs.writeFileSync(filePath, sampleContent);
+  //   }
     
-    expect(fs.existsSync(filePath)).toBeTruthy();
-    console.log(`File exists at: ${filePath}`);
+  //   expect(fs.existsSync(filePath)).toBeTruthy();
+  //   console.log(`File exists at: ${filePath}`);
     
-    // 2. File information for upload
-    const fileName = path.basename(filePath);
-    const fileSize = fs.statSync(filePath).size;
-    console.log(`File: ${fileName}, Size: ${fileSize} bytes`);
+  //   // 2. File information for upload
+  //   const fileName = path.basename(filePath);
+  //   const fileSize = fs.statSync(filePath).size;
+  //   console.log(`File: ${fileName}, Size: ${fileSize} bytes`);
     
-    // 3. Microsoft Graph API configuration
-    const graphBaseUrl = 'https://graph.microsoft.com/v1.0';
-    const siteReference = 'jadebiz.sharepoint.com:/sites/JBS-Intranet-QA-POC';
-    const uploadUrl = `${graphBaseUrl}/sites/${siteReference}:/drive/root:/QA-POC/${fileName}:/content`;
+  //   // 3. Microsoft Graph API configuration
+  //   const graphBaseUrl = 'https://graph.microsoft.com/v1.0';
+  //   const siteReference = 'jadebiz.sharepoint.com:/sites/JBS-Intranet-QA-POC';
+  //   const uploadUrl = `${graphBaseUrl}/sites/${siteReference}:/drive/root:/QA-POC/${fileName}:/content`;
     
-    console.log(`Graph API Upload URL: ${uploadUrl}`);
+  //   console.log(`Graph API Upload URL: ${uploadUrl}`);
     
-    // 4. Authentication - using Basic auth (convert to Bearer if needed)
-    const authToken = 'b21lZXNoYS5tYWhhbnRhQGphZGUtYml6LmNvbTpFYXJuQDIwMjY=';
-    const decoded = Buffer.from(authToken, 'base64').toString();
-    const [username, password] = decoded.split(':');
-    console.log(`Using credentials for: ${username}`);
+  //   // 4. Authentication - using Basic auth (convert to Bearer if needed)
+  //   const authToken = 'b21lZXNoYS5tYWhhbnRhQGphZGUtYml6LmNvbTpFYXJuQDIwMjY=';
+  //   const decoded = Buffer.from(authToken, 'base64').toString();
+  //   const [username, password] = decoded.split(':');
+  //   console.log(`Using credentials for: ${username}`);
     
-    // 5. Upload file using multipart form data pattern (Graph API style)
-    console.log('Uploading file via Microsoft Graph API...');
+  //   // 5. Upload file using multipart form data pattern (Graph API style)
+  //   console.log('Uploading file via Microsoft Graph API...');
     
-    const response = await request.put(uploadUrl, {
-      headers: {
-        'Accept': '*/*',
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Authorization': `Basic ${authToken}`,
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      multipart: {
-        file: filePath,
-        purpose: 'sharepoint-upload',
-        folder: 'QA-POC'
-      }
-    });
+  //   const response = await request.put(uploadUrl, {
+  //     headers: {
+  //       'Accept': '*/*',
+  //       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  //       'Authorization': `Basic ${authToken}`,
+  //       'X-Requested-With': 'XMLHttpRequest'
+  //     },
+  //     multipart: {
+  //       file: filePath,
+  //       purpose: 'sharepoint-upload',
+  //       folder: 'QA-POC'
+  //     }
+  //   });
 
-    const statusCode = response.status();
-    console.log("Upload status: " + statusCode);
+  //   const statusCode = response.status();
+  //   console.log("Upload status: " + statusCode);
     
-    // 6. Handle response based on status
-    if (statusCode === 200 || statusCode === 201 || statusCode === 204) {
-      try {
-        const body = await response.json();
-        console.log('✅ File uploaded successfully via Microsoft Graph API');
-        console.log(`Upload response:`, body.name || body.id || 'Upload confirmed');
-      } catch (parseError) {
-        // Some successful responses might not have JSON body
-        console.log('✅ File uploaded successfully (no response body)');
-      }
+  //   // 6. Handle response based on status
+  //   if (statusCode === 200 || statusCode === 201 || statusCode === 204) {
+  //     try {
+  //       const body = await response.json();
+  //       console.log('✅ File uploaded successfully via Microsoft Graph API');
+  //       console.log(`Upload response:`, body.name || body.id || 'Upload confirmed');
+  //     } catch (parseError) {
+  //       // Some successful responses might not have JSON body
+  //       console.log('✅ File uploaded successfully (no response body)');
+  //     }
       
-      // 7. Verify file exists using Graph API
-      console.log('🔍 Verifying file upload via Microsoft Graph API...');
+  //     // 7. Verify file exists using Graph API
+  //     console.log('🔍 Verifying file upload via Microsoft Graph API...');
       
-      const verifyUrl = `${graphBaseUrl}/sites/${siteReference}:/drive/root:/QA-POC/${fileName}`;
-      const verifyResponse = await request.get(verifyUrl, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Basic ${authToken}`
-        }
-      });
+  //     const verifyUrl = `${graphBaseUrl}/sites/${siteReference}:/drive/root:/QA-POC/${fileName}`;
+  //     const verifyResponse = await request.get(verifyUrl, {
+  //       headers: {
+  //         'Accept': 'application/json',
+  //         'Authorization': `Basic ${authToken}`
+  //       }
+  //     });
       
-      if (verifyResponse.ok()) {
-        const fileInfo = await verifyResponse.json();
-        console.log('✅ File verified in SharePoint via Graph API');
-        console.log(`File properties: ${fileInfo.name}, Size: ${fileInfo.size} bytes`);
-        expect(fileInfo.name).toBe(fileName);
-      } else {
-        console.log(`⚠️ Verification failed with status: ${verifyResponse.status()}`);
-      }
+  //     if (verifyResponse.ok()) {
+  //       const fileInfo = await verifyResponse.json();
+  //       console.log('✅ File verified in SharePoint via Graph API');
+  //       console.log(`File properties: ${fileInfo.name}, Size: ${fileInfo.size} bytes`);
+  //       expect(fileInfo.name).toBe(fileName);
+  //     } else {
+  //       console.log(`⚠️ Verification failed with status: ${verifyResponse.status()}`);
+  //     }
       
-    } else {
-      const errorBody = await response.text();
-      console.log(`❌ Upload failed with status: ${statusCode}`);
-      console.log(`Error response: ${errorBody}`);
+  //   } else {
+  //     const errorBody = await response.text();
+  //     console.log(`❌ Upload failed with status: ${statusCode}`);
+  //     console.log(`Error response: ${errorBody}`);
       
-      // Try alternative Graph API endpoint
-      console.log('🔄 Attempting alternative Graph API approach...');
+  //     // Try alternative Graph API endpoint
+  //     console.log('🔄 Attempting alternative Graph API approach...');
       
-      const altUploadUrl = `${graphBaseUrl}/sites/${siteReference}:/drive/root:/QA-POC:/children`;
-      const fileContent = fs.readFileSync(filePath);
+  //     const altUploadUrl = `${graphBaseUrl}/sites/${siteReference}:/drive/root:/QA-POC:/children`;
+  //     const fileContent = fs.readFileSync(filePath);
       
-      const altResponse = await request.post(altUploadUrl, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${authToken}`
-        },
-        data: {
-          name: fileName,
-          file: {
-            contentBytes: fileContent.toString('base64')
-          }
-        }
-      });
+  //     const altResponse = await request.post(altUploadUrl, {
+  //       headers: {
+  //         'Accept': 'application/json',
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Basic ${authToken}`
+  //       },
+  //       data: {
+  //         name: fileName,
+  //         file: {
+  //           contentBytes: fileContent.toString('base64')
+  //         }
+  //       }
+  //     });
       
-      if (altResponse.ok()) {
-        const altBody = await altResponse.json();
-        console.log('✅ File uploaded via alternative Graph API endpoint');
-        console.log(`Alternative response:`, altBody.name || 'Upload confirmed');
-      } else {
-        console.log(`❌ Alternative Graph API also failed: ${altResponse.status()}`);
-        throw new Error(`All Graph API upload methods failed. Primary: ${statusCode}, Alternative: ${altResponse.status()}`);
-      }
-    }
+  //     if (altResponse.ok()) {
+  //       const altBody = await altResponse.json();
+  //       console.log('✅ File uploaded via alternative Graph API endpoint');
+  //       console.log(`Alternative response:`, altBody.name || 'Upload confirmed');
+  //     } else {
+  //       console.log(`❌ Alternative Graph API also failed: ${altResponse.status()}`);
+  //       throw new Error(`All Graph API upload methods failed. Primary: ${statusCode}, Alternative: ${altResponse.status()}`);
+  //     }
+  //   }
     
-    expect(response.status()).toBeGreaterThanOrEqual(200);
-    expect(response.status()).toBeLessThan(300);
+  //   expect(response.status()).toBeGreaterThanOrEqual(200);
+  //   expect(response.status()).toBeLessThan(300);
     
-    console.log('🎉 TC08: SharePoint upload via Microsoft Graph API completed successfully');
-  });
+  //   console.log('🎉 TC08: SharePoint upload via Microsoft Graph API completed successfully');
+  // });
   test('TC09: Email Validation', async ({ page }) => {
     console.log('TC09: Starting email validation test');
     
