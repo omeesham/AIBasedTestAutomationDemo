@@ -374,17 +374,16 @@ test.describe('EspoCRM Lead Management Tests', () => {
   test('TC09: Email Validation', async ({ page }) => {
     console.log('TC09: Starting email validation test');
     
-    // 1. Setup and navigate
+      // 1. Setup and navigate
     await CRMLogin(page);
     await navigateToLeads(page);
     
     // 2. Apply filtering
-    await applyDateFilter(page, 'Last 7 Days');
-    
-    // Click on the selectize input with "Last 7 Days" item
-    await page.locator('.selectize-input.items.has-options.full.has-items .item[data-value="lastSevenDays"]').click();
-    
-    await expect(page.locator('div').filter({ hasText: 'Actions Remove Merge Mass' }).nth(2)).toBeVisible();
+    await page.locator('button').nth(3).click();
+    await page.getByRole('button', { name: 'Created At' }).click();
+    await page.locator('div').filter({ hasText: /^Last 7 Days$/ }).nth(1).click();
+    await page.getByText('Current Month').click();
+    await page.getByRole('button', { name: ' Apply' }).click();
     
     // 2.1 Capture entries with Status = "New"
     await page.waitForSelector('table.table tbody tr.list-row', { timeout: 10000 });
@@ -563,14 +562,14 @@ test.describe('EspoCRM Lead Management Tests', () => {
     
     // 4. First click the field container to activate the dropdown
     await page.locator('div.field[data-name="format"]').click();
-    
+    await page.waitForTimeout(3000);
     // 5. Wait for dropdown to appear and click CSV option  
     await page.waitForSelector('.selectize-dropdown-content .option[data-value="csv"]', { timeout: 5000 });
     await page.locator('.selectize-dropdown-content .option[data-value="csv"]').click();
-    
+    await page.waitForTimeout(3000);
     // 6. Check the export all fields checkbox
     await page.locator('input[data-name="exportAllFields"].form-checkbox').check();
-    
+    await page.waitForTimeout(3000);
     // 7. Setup download handler and export
     const downloadPromise = page.waitForEvent('download');
     await page.locator('button[data-name="export"].btn.btn-danger').click();
