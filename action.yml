@@ -1,0 +1,19 @@
+name: example-file-upload
+on: workflow_dispatch
+jobs:
+  get_report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Test File
+        run: touch /tmp/foo.csv
+      - name: Send to Sharepoint
+        uses: cringdahl/sharepoint-file-upload-action@1.0.0
+        with:
+          file_path: "**/*.csv"
+          file_path_recursive_match: False
+          host_name: 'your.sharepoint.com'
+          site_name: 'some_site'
+          upload_path: 'fake_files'
+          tenant_id: ${{ secrets.SHAREPOINT_TENANT_ID }}
+          client_id: ${{ secrets.SHAREPOINT_CLIENT_ID }}
+          client_secret: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}
