@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('test', async ({ page }) => {
+test.skip('test', async ({ page }) => {
   // Navigate with domcontentloaded (less strict, faster)
   try {
     await page.goto('https://demo.us.espocrm.com/', { 

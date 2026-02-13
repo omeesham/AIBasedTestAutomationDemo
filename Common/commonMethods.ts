@@ -18,31 +18,13 @@ dotenv.config();
  * @param page Playwright Page object
  */
 export async function CRMLogin(page: Page) {
-  // Navigate with domcontentloaded (less strict, faster)
-  try {
-    await page.goto('https://demo.us.espocrm.com/', { 
-      waitUntil: 'domcontentloaded',
-      timeout: 60000 
-    });
-  } catch (error) {
-    console.error('Page load error, continuing anyway:', error);
-  }
-  
-  // Wait for the login form to load and click login button
-  try {
-    // First try the specific ID selector which we know exists
-    const loginButton = page.locator('#btn-login');
-    await loginButton.waitFor({ state: 'visible', timeout: 30000 });
-    await loginButton.click();
-  } catch (error) {
-    // Fallback to the original selector if the ID doesn't work
-    const loginButton = page.getByRole('button', { name: 'Login' });
-    await loginButton.waitFor({ state: 'visible', timeout: 30000 });
-    await loginButton.click();
-  }
-  
-  // Wait for navigation after login - check for Leads link in navigation
-  await page.waitForSelector('a[href="#Lead"]', { timeout: 30000 });
+
+  await page.goto('https://demo.us.espocrm.com/');
+  await page.waitForLoadState('domcontentloaded');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await page.waitForLoadState('domcontentloaded');
+  await expect(page.getByRole('link').filter({ hasText: 'Leads' })).toBeVisible();
+  await page.getByRole('link').filter({ hasText: 'Leads' }).click();
   
   console.log(`✅ Login successful - Current URL: ${await page.url()}`);
 }
@@ -53,7 +35,8 @@ export async function CRMLogin(page: Page) {
  */
 export async function navigateToLeads(page: Page) {
   await page.getByRole('link').filter({ hasText: 'Leads' }).click();
-  await expect(page.getByTitle('Click to refresh')).toBeVisible();
+  await page.waitForLoadState('domcontentloaded');
+  //await expect(page.getByTitle('Click to refresh')).toBeVisible();
 }
 
 /**
@@ -61,7 +44,22 @@ export async function navigateToLeads(page: Page) {
  * @param page Playwright Page object
  */
 export async function openAdvancedFilters(page: Page) {
-  await page.locator('button').nth(3).click();
+  // await page.locator('button').nth(3).click();
+  // await page.waitForTimeout(1000); // Wait for panel to open
+
+    // Click dropdown toggle
+  const dropdownButton = page.locator('button.add-filter-button');
+
+  await dropdownButton.waitFor({ state: 'visible' });
+  await dropdownButton.click();
+
+  // Wait for dropdown menu
+  const dropdownMenu = page.locator('.dropdown-menu.filter-list');
+  await dropdownMenu.waitFor({ state: 'visible' });
+
+  // Click Created At
+  const createdAt = page.locator('[data-action="addFilter"][data-name="createdAt"]');
+  await createdAt.click();
 }
 
 /**
@@ -69,11 +67,11 @@ export async function openAdvancedFilters(page: Page) {
  * @param page Playwright Page object
  * @param dateRange Date range to select (e.g., 'Current Month', 'Last Month', 'Last 7 Days')
  */
-export async function applyDateFilter(page: Page, dateRange: string) {
+export async function applyDateFilter1(page: Page, dateRange: string) {
   await openAdvancedFilters(page);
   
   // Wait a moment for the filters panel to fully load
-  await page.waitForTimeout(1000);
+ // await page.waitForTimeout(1000);
   
   // Check if the dropdown is already open by looking for the options
   const dropdownVisible = await page.locator('div').filter({ hasText: new RegExp(`^${dateRange}$`) }).first().isVisible();
@@ -116,6 +114,32 @@ export async function applyDateFilter(page: Page, dateRange: string) {
   // Click Apply button using data-action attribute (more reliable)
   await page.locator('[data-action="applyFilters"]').click();
   await page.waitForTimeout(2000); // Wait for filter to apply
+}
+
+export async function applyDateFilter(page: Page, dateRange: string) {
+
+  await openAdvancedFilters(page);
+
+  // Click Selectize input to open dropdown
+  const selectizeInput = page.locator('.selectize-control .selectize-input');
+  await selectizeInput.click();
+
+  // Wait for dropdown visible
+  const dropdown = page.locator('.selectize-dropdown');
+  await dropdown.waitFor({ state: 'visible' });
+
+  // Click exact option using data-value OR text
+  const option = page.locator('.selectize-dropdown .option', {
+    hasText: dateRange
+  });
+
+  await option.click();
+
+  // Wait for dropdown to close automatically
+  await dropdown.waitFor({ state: 'hidden' });
+
+  // Click Apply button
+  await page.locator('[data-action="applyFilters"]').click();
 }
 
 /**

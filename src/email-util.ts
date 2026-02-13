@@ -216,9 +216,7 @@ export async function sendDailyStatisticsEmail(
 
     try {
 
-        const toEmail =
-            process.env.PWG_EMAIL_ID ||
-            'Omeesha019@gmail.com';
+         const toEmails = process.env.PWG_EMAIL_ID?.split(',').map(email => email.trim());
 
         const fromEmail =
             process.env.PWG_EMAIL_FROM ||
@@ -256,11 +254,13 @@ export async function sendDailyStatisticsEmail(
 
         const mailOptions = {
 
-            from: `"CRM Automation" <${fromEmail}>`,
+            from: `"no-reply" <${fromEmail}>`,
 
-            to: toEmail,
+            to: toEmails?.join(',') || '',
 
-            subject: 'Daily Statistics or Updates',
+            cc: process.env.PWG_EMAIL_CC || '',
+
+            subject: `Daily Statistics - ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
 
             html: `
             <html>
@@ -295,6 +295,9 @@ export async function sendDailyStatisticsEmail(
             await transporter.sendMail(mailOptions);
 
         console.log('✅ Daily email sent:', info.messageId);
+        // console.log('📧 Recipients:', toEmails?.join(', '));
+        // console.log('📬 Accepted:', info.accepted);
+        // console.log('📭 Rejected:', info.rejected);
 
     }
     catch (error) {
