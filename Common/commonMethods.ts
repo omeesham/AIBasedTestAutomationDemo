@@ -68,7 +68,12 @@ export async function applyDateFilter(page: Page, dateRange: string) {
     await page.locator('div.item, div.option').filter({ hasText: new RegExp(`^${dateRange}$`) }).first().click();
   }
   
-  await page.getByRole('button', { name: ' Apply' }).click();
+  // Close the dropdown by pressing Escape to prevent it from blocking the Apply button
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
+  
+  // Click Apply button using data-action attribute (more reliable)
+  await page.locator('[data-action="applyFilters"]').click();
   await page.waitForTimeout(2000); // Wait for filter to apply
 }
 

@@ -382,13 +382,10 @@ test.describe('EspoCRM Lead Management Tests', () => {
 
 
       // 2. Apply filtering
-      await page.locator('button').nth(3).click();
-      await page.getByRole('button', { name: 'Created At' }).click();
-      await page.locator('div').filter({ hasText: /^Last 7 Days$/ }).nth(1).click();
-      await page.getByText('Current Month').click();
-      await page.getByRole('button', { name: ' Apply' }).click();
+      await applyDateFilter(page, 'Last 7 Days');
+      await expect(page.locator('div').filter({ hasText: 'Actions Remove Merge Mass' }).nth(2)).toBeVisible();
 
-      await page.waitForSelector('table.table tbody tr.list-row');
+      await page.waitForSelector('table.table tbody tr.list-row', { timeout: 10000 });
 
       const newLeadsData: Array<any> = [];
 
@@ -418,9 +415,32 @@ test.describe('EspoCRM Lead Management Tests', () => {
           }
       }
 
+      // Format data for console output (text format)
+      let consoleOutput = '\n';
+      consoleOutput += '='.repeat(120) + '\n';
+      consoleOutput += '                              NEW LEADS - LAST 7 DAYS\n';
+      consoleOutput += '='.repeat(120) + '\n';
+      consoleOutput += `${'Name'.padEnd(25)} | ${'Status'.padEnd(15)} | ${'Email'.padEnd(30)} | ${'Phone'.padEnd(18)} | ${'Assigned User'.padEnd(20)}\n`;
+      consoleOutput += '-'.repeat(120) + '\n';
+      
+      if (newLeadsData.length > 0) {
+          for (const lead of newLeadsData) {
+              consoleOutput += `${lead.name.padEnd(25)} | ${lead.status.padEnd(15)} | ${lead.email.padEnd(30)} | ${lead.phone.padEnd(18)} | ${lead.assignedUser.padEnd(20)}\n`;
+          }
+      } else {
+          consoleOutput += 'No new leads found in the last 7 days.\n';
+      }
+      
+      consoleOutput += '='.repeat(120) + '\n';
+      consoleOutput += `Total New Leads: ${newLeadsData.length}\n`;
+      consoleOutput += '='.repeat(120) + '\n';
+      
+      // Print to console
+      console.log(consoleOutput);
+
       console.log(`Total new leads: ${newLeadsData.length}`);
 
-      // Generate HTML report
+      // Generate HTML report with styling
       const newLeadsFilePath =
           path.join(__dirname, '..', 'Data', 'newLeadLast7Days.html');
 
@@ -430,56 +450,135 @@ test.describe('EspoCRM Lead Management Tests', () => {
 
       }
 
-      let htmlOutput = `
-  <html>
-  <body>
-  <h2>New Leads Report</h2>
-  <table border="1">
-  <tr>
-  <th>Name</th>
-  <th>Status</th>
-  <th>Email</th>
-  <th>Phone</th>
-  <th>Assigned User</th>
-  </tr>`;
-
-      for (const lead of newLeadsData) {
-
-          htmlOutput += `
-  <tr>
-  <td>${lead.name}</td>
-  <td>${lead.status}</td>
-  <td>${lead.email}</td>
-  <td>${lead.phone}</td>
-  <td>${lead.assignedUser}</td>
-  </tr>`;
+      let htmlOutput = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>New Leads - Last 7 Days</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      border-bottom: 3px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: bold;
+    }
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .summary {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e8f5e9;
+      border-left: 4px solid #4CAF50;
+      font-weight: bold;
+    }
+    .no-data {
+      text-align: center;
+      padding: 30px;
+      color: #999;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>NEW LEADS - LAST 7 DAYS</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Assigned User</th>
+        </tr>
+      </thead>
+      <tbody>
+`;
+      
+      if (newLeadsData.length > 0) {
+          for (const lead of newLeadsData) {
+              htmlOutput += `        <tr>
+          <td>${lead.name}</td>
+          <td>${lead.status}</td>
+          <td>${lead.email}</td>
+          <td>${lead.phone}</td>
+          <td>${lead.assignedUser}</td>
+        </tr>
+`;
+          }
+      } else {
+          htmlOutput += `        <tr>
+          <td colspan="5" class="no-data">No new leads found in the last 7 days.</td>
+        </tr>
+`;
       }
 
-      htmlOutput += `
-  </table>
-  <h3>Total Leads: ${newLeadsData.length}</h3>
-  </body>
-  </html>`;
+      htmlOutput += `      </tbody>
+    </table>
+    <div class="summary">
+      Total New Leads: ${newLeadsData.length}
+    </div>
+  </div>
+</body>
+</html>`;
 
       fs.writeFileSync(newLeadsFilePath, htmlOutput);
 
-      console.log(`HTML report saved: ${newLeadsFilePath}`);
+      console.log(`✅ HTML report saved: ${newLeadsFilePath}`);
 
       // Export Excel file
-      await page.locator('input.select-all').click();
+      await page.waitForSelector('input[type="checkbox"].select-all.form-checkbox.form-checkbox-small', { timeout: 10000 });
+      await page.locator('input[type="checkbox"].select-all.form-checkbox.form-checkbox-small').click();
       await page.getByRole('button', { name: 'Actions' }).click();
       await page.getByRole('button', { name: 'Export' }).click();
+      await page.waitForTimeout(3000);
 
-      await page.locator('[data-name="format"]').click();
-      await page.waitForTimeout(2000);
-      await page.locator('[data-value="csv"]').click();
-      await page.waitForTimeout(2000);
-      await page.locator('[data-name="exportAllFields"]').check();
+      // Click the field container to activate the dropdown
+      await page.locator('div.field[data-name="format"]').click();
+      
+      // Wait for dropdown to appear and click XLSX option  
+      await page.waitForSelector('.selectize-dropdown-content .option[data-value="xlsx"]', { timeout: 5000 });
+      await page.locator('.selectize-dropdown-content .option[data-value="xlsx"]').click();
+      
+      // Check the export all fields checkbox
+      await page.locator('input[data-name="exportAllFields"].form-checkbox').check();
+      
+      // Setup download handler and export
       await page.waitForTimeout(1000);
       const downloadPromise = page.waitForEvent('download');
-
-      await page.locator('[data-name="export"]').click();
-
+      await page.locator('button[data-name="export"].btn.btn-danger').click();
       const download = await downloadPromise;
 
       const downloadPath =
@@ -488,8 +587,10 @@ test.describe('EspoCRM Lead Management Tests', () => {
       await download.saveAs(downloadPath);
 
       expect(fs.existsSync(downloadPath)).toBeTruthy();
+      const stats = fs.statSync(downloadPath);
+      expect(stats.size).toBeGreaterThan(0);
 
-      console.log(`Excel report saved: ${downloadPath}`);
+      console.log(`Excel report saved: ${downloadPath}, Size: ${stats.size} bytes`);
 
       // ✅ SEND EMAIL HERE
       try {
