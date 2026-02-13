@@ -12,3 +12,7 @@
 
 # Playwright
 node_modules/
+
+# GitHub Actions and Agents
+.github/agents/
+.github/workflows/

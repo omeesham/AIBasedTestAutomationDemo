@@ -35,7 +35,18 @@ pipeline {
                 always {
                     mail to: 'omeesha.mahanta@jade-biz.com',
                     subject: "Playwright Automation - ${currentBuild.currentResult}",
-                    body: "Build completed. Check report at ${env.BUILD_URL}"
+                    body: """
+
+Automation execution completed.
+
+Status: ${currentBuild.currentResult}
+
+Build URL: ${env.BUILD_URL}
+
+Regards,
+Automation Team
+
+"""
                     archiveArtifacts artifacts: 'playwright-report/**', fingerprint: true
                     archiveArtifacts artifacts: 'allure-results/**', fingerprint: true
                 }

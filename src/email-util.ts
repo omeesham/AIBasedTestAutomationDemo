@@ -2,48 +2,48 @@ import * as nodemailer from 'nodemailer';
 import os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
 
-let userName: string;
-
-/**
- * SMTP Transporter configuration (NO PASSWORD REQUIRED)
- * Uses company SMTP relay
- */
+dotenv.config();
+let userName: string = process.env.USER || process.env.USERNAME || 'Automation User';
 const transporter = nodemailer.createTransport({
 
-    host: "jade-biz.com.mail.protection.outlook.com",
+    host: "smtp.gmail.com",
 
     port: 587,
 
     secure: false,
 
+    auth: {
+
+        user: process.env.GMAIL_USER,
+
+        pass: process.env.GMAIL_APP_PASSWORD
+
+    },
+
     tls: {
+
         rejectUnauthorized: false
+
     }
 
 });
 
-/**
- * Verify SMTP connection once at startup
- */
-transporter.verify(function (error, success) {
+
+transporter.verify((error, success) => {
+
     if (error) {
-        console.error('❌ SMTP connection failed:', error);
+
+        console.error("❌ Gmail SMTP connection failed:", error);
+
     } else {
-        console.log('✅ SMTP server is ready to send emails');
+
+        console.log("✅ Gmail SMTP ready");
+
     }
+
 });
-
-/**
- * Determine execution username
- */
-if (process.env.BUILD_TAG !== undefined && os.hostname() !== 'os-worker-windo') {
-    userName = process.env.BUILD_USER || 'jade-biz';
-} else {
-    userName = process.env.USERNAME || process.env.USER || 'AutomationUser';
-}
-
-
 /**
  * Send Playwright Execution Report Email
  */
