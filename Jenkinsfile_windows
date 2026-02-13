@@ -33,7 +33,6 @@ pipeline {
             }
             post {
                 always {
-                    bat "node scripts/send-pipeline-email.js ${currentBuild.currentResult} ${env.BUILD_URL} ${env.BUILD_NUMBER}"
                     archiveArtifacts artifacts: 'playwright-report/**', fingerprint: true
                     archiveArtifacts artifacts: 'allure-results/**', fingerprint: true
                 }
