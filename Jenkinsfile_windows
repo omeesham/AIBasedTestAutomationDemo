@@ -33,10 +33,10 @@ pipeline {
             }
             post {
                 always {
-                    mail to: 'omeesha.mahanta@jade-biz.com',
-                    subject: "Playwright Automation - ${currentBuild.currentResult}",
-                    body: """
-
+                    emailext(
+                        to: 'omeesha.mahanta@jade-biz.com,omeesha569@gmail.com',
+                        subject: "Playwright Automation - ${currentBuild.currentResult}",
+                        body: """
 Automation execution completed.
 
 Status: ${currentBuild.currentResult}
@@ -45,8 +45,9 @@ Build URL: ${env.BUILD_URL}
 
 Regards,
 Automation Team
-
-"""
+""",
+                        mimeType: 'text/plain'
+                    )
                     archiveArtifacts artifacts: 'playwright-report/**', fingerprint: true
                     archiveArtifacts artifacts: 'allure-results/**', fingerprint: true
                 }
