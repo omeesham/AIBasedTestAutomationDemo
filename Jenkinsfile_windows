@@ -33,21 +33,7 @@ pipeline {
             }
             post {
                 always {
-                    emailext(
-                        to: 'omeesha.mahanta@jade-biz.com,omeesha569@gmail.com',
-                        subject: "Playwright Automation - ${currentBuild.currentResult}",
-                        body: """
-Automation execution completed.
-
-Status: ${currentBuild.currentResult}
-
-Build URL: ${env.BUILD_URL}
-
-Regards,
-Automation Team
-""",
-                        mimeType: 'text/plain'
-                    )
+                    bat "node scripts/send-pipeline-email.js ${currentBuild.currentResult} ${env.BUILD_URL} ${env.BUILD_NUMBER}"
                     archiveArtifacts artifacts: 'playwright-report/**', fingerprint: true
                     archiveArtifacts artifacts: 'allure-results/**', fingerprint: true
                 }
