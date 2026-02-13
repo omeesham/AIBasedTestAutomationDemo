@@ -225,12 +225,22 @@ export async function sendDailyStatisticsEmail(
             `automation@${os.hostname()}`;
 
         let emailBody = '';
+        let cssStyles = '';
 
         if (fs.existsSync(newLeadsFilePath)) {
 
             const htmlContent =
                 fs.readFileSync(newLeadsFilePath, 'utf8');
 
+            // Extract CSS styles
+            const styleMatch =
+                htmlContent.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+            
+            cssStyles = styleMatch
+                ? styleMatch[1]
+                : '';
+
+            // Extract body content
             const bodyMatch =
                 htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
 
@@ -250,9 +260,16 @@ export async function sendDailyStatisticsEmail(
 
             to: toEmail,
 
-            subject: 'Daily Statistics Report',
+            subject: 'Daily Statistics or Updates',
 
             html: `
+            <html>
+            <head>
+            <style>
+            ${cssStyles}
+            </style>
+            </head>
+            <body>
             <h2>Daily Statistics</h2>
 
             ${emailBody}
@@ -262,6 +279,8 @@ export async function sendDailyStatisticsEmail(
             <p>Attached: Full Report</p>
 
             <p><i>Auto-generated email</i></p>
+            </body>
+            </html>
             `,
 
             attachments: fs.existsSync(reportFilePath)

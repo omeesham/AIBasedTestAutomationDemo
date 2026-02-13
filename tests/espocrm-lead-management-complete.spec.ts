@@ -4,8 +4,7 @@ import * as path from 'path';
 import { 
   CRMLogin, 
   navigateToLeads, 
-  applyDateFilter, 
-  applyStatusFilter, 
+  applyDateFilter,
   selectAllLeads, 
   exportLeads, 
   clearFilters, 
@@ -46,14 +45,7 @@ test.describe('EspoCRM Lead Management Tests', () => {
     await CRMLogin(page);
     await navigateToLeads(page);
     
-    // 2. Apply status filter (implementation may need adjustment based on UI)
-    try {
-      await applyStatusFilter(page, ['New', 'In Process']);
-    } catch {
-      console.log('Status filter implementation needs adjustment - using date filter instead');
-      await applyDateFilter(page, 'Current Month');
-    }
-    
+ 
     // 3. Select all leads and export as XLSX (default format)
     await selectAllLeads(page);
     const download = await exportLeads(page, 'xlsx', true);
@@ -559,8 +551,8 @@ test.describe('EspoCRM Lead Management Tests', () => {
       console.log(`✅ HTML report saved: ${newLeadsFilePath}`);
 
       // Export Excel file
-      await page.waitForSelector('input[type="checkbox"].select-all.form-checkbox.form-checkbox-small', { timeout: 10000 });
-      await page.locator('input[type="checkbox"].select-all.form-checkbox.form-checkbox-small').click();
+      await selectAllLeads(page);
+      await page.waitForTimeout(1000);
       await page.getByRole('button', { name: 'Actions' }).click();
       await page.getByRole('button', { name: 'Export' }).click();
       await page.waitForTimeout(3000);

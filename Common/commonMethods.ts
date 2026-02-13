@@ -18,17 +18,31 @@ dotenv.config();
  * @param page Playwright Page object
  */
 export async function CRMLogin(page: Page) {
-  await page.goto('https://demo.us.espocrm.com/');
-  await expect(page.getByRole('button', { name: 'Login' })).toBeVisible();
-  await page.getByRole('button', { name: 'Login' }).click();
+  // Navigate with domcontentloaded (less strict, faster)
+  try {
+    await page.goto('https://demo.us.espocrm.com/', { 
+      waitUntil: 'domcontentloaded',
+      timeout: 60000 
+    });
+  } catch (error) {
+    console.error('Page load error, continuing anyway:', error);
+  }
   
-  // Wait for successful login by checking we're no longer on login page
-  // and that navigation elements are available
-  await page.waitForFunction(() => {
-    return !window.location.href.includes('login') && 
-           (document.querySelector('nav') || document.querySelector('.navbar') ||
-            document.querySelector('a[href*="Lead"]') || document.title !== 'Login');
-  }, { timeout: 30000 });
+  // Wait for the login form to load and click login button
+  try {
+    // First try the specific ID selector which we know exists
+    const loginButton = page.locator('#btn-login');
+    await loginButton.waitFor({ state: 'visible', timeout: 30000 });
+    await loginButton.click();
+  } catch (error) {
+    // Fallback to the original selector if the ID doesn't work
+    const loginButton = page.getByRole('button', { name: 'Login' });
+    await loginButton.waitFor({ state: 'visible', timeout: 30000 });
+    await loginButton.click();
+  }
+  
+  // Wait for navigation after login - check for Leads link in navigation
+  await page.waitForSelector('a[href="#Lead"]', { timeout: 30000 });
   
   console.log(`✅ Login successful - Current URL: ${await page.url()}`);
 }
@@ -57,36 +71,51 @@ export async function openAdvancedFilters(page: Page) {
  */
 export async function applyDateFilter(page: Page, dateRange: string) {
   await openAdvancedFilters(page);
-  await page.getByRole('button', { name: 'Created At' }).click();
   
-  // Click on the specific date range option, using a more specific selector
-  // to avoid strict mode violations
+  // Wait a moment for the filters panel to fully load
+  await page.waitForTimeout(1000);
+  
+  // Check if the dropdown is already open by looking for the options
+  const dropdownVisible = await page.locator('div').filter({ hasText: new RegExp(`^${dateRange}$`) }).first().isVisible();
+  
+  if (!dropdownVisible) {
+    // If dropdown is not visible, try to open it by clicking on the Created At area
+    const createdAtArea = page.locator('text=Created At').first();
+    if (await createdAtArea.isVisible()) {
+      await createdAtArea.click();
+      await page.waitForTimeout(500);
+    }
+  }
+  
+  // Click on the specific date range option
   try {
-    await page.locator(`.selectize-dropdown-content .option[data-value]`).filter({ hasText: dateRange }).first().click();
+    const dateOption = page.locator('div').filter({ hasText: new RegExp(`^${dateRange}$`) }).first();
+    await page.waitForTimeout(1000);
+    await dateOption.click();
   } catch {
     // Fallback to a different selector if the first approach doesn't work
     await page.locator('div.item, div.option').filter({ hasText: new RegExp(`^${dateRange}$`) }).first().click();
   }
   
-  // Close the dropdown by pressing Escape to prevent it from blocking the Apply button
+  // Close the dropdown by pressing Escape key
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
+  
+  // If Escape didn't work, check if dropdown is still open using a more specific selector
+  try {
+    const isDropdownStillOpen = await page.locator('.selectize-dropdown-content div').filter({ hasText: 'Ever' }).first().isVisible();
+    if (isDropdownStillOpen) {
+      // Click on the "Created At" label area to close dropdown
+      await page.locator('text=Created At').first().click();
+      await page.waitForTimeout(500);
+    }
+  } catch {
+    // If the check fails, just continue - the dropdown might already be closed
+  }
   
   // Click Apply button using data-action attribute (more reliable)
   await page.locator('[data-action="applyFilters"]').click();
   await page.waitForTimeout(2000); // Wait for filter to apply
-}
-
-/**
- * Applies a Status filter
- * @param page Playwright Page object
- * @param statuses Array of status values to select
- */
-export async function applyStatusFilter(page: Page, statuses: string[]) {
-  await openAdvancedFilters(page);
-  await page.getByRole('button', { name: 'Status' }).click();
-  // Implementation would depend on the actual status filter UI
-  await page.waitForTimeout(1000);
 }
 
 /**
