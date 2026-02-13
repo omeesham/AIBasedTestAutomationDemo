@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test",
-    "test:headed": "npx playwright test --headed",
+    "clean:allure": "node -e \"const fs = require('fs'); const path = 'allure-results'; if (fs.existsSync(path)) { fs.rmSync(path, { recursive: true, force: true }); console.log('✅ Cleaned allure-results directory'); }\"",
+    "clean:reports": "node -e \"const fs = require('fs'); ['allure-results', 'allure-report', 'playwright-report'].forEach(dir => { if (fs.existsSync(dir)) { fs.rmSync(dir, { recursive: true, force: true }); console.log('✅ Cleaned ' + dir); } });\"",
+    "test": "npm run clean:allure && npx playwright test",
+    "test:headed": "npm run clean:allure && npx playwright test --headed",
     "test:ui": "npx playwright test --ui",
     "allure:generate": "npx allure generate ./allure-results -o ./allure-report --clean",
     "allure:open": "npx allure open ./allure-report",
