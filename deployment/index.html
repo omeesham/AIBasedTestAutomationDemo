@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Successful - Test Automation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Three-shade purple gradient (no white): deep -> mid -> soft */
+            background: linear-gradient(135deg, #4C0070 0%, #6B21A8 50%, #8B5CF6 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 25px 35px;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease-out 0.2s backwards;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .success-icon svg {
+            width: 35px;
+            height: 35px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .info-card {
+            background: #f9fafb;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .info-card h3 {
+            color: #374151;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-card p {
+            color: #1f2937;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .status-card {
+            background: #ecfdf5;
+            border-left: 3px solid #10b981;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+
+        .status-card h3 {
+            color: #374151;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .status-card p {
+            color: #065f46;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .links-section {
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .links-section h2 {
+            color: #1f2937;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .btn {
+            display: block;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .footer {
+            margin-top: 18px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">
+            <svg viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+
+        <h1>🎉 Deployment Successful!</h1>
+        <p class="subtitle">AI-Based Test Automation Framework is Live</p>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Version</h3>
+                <p>1.0.0</p>
+            </div>
+            <div class="info-card">
+                <h3>Deployment Time</h3>
+                <p id="deploymentTime">Loading...</p>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h3>Status</h3>
+            <p>✅ All services running successfully</p>
+        </div>
+
+        <div class="links-section">
+            <h2>Quick Access</h2>
+            <a href="../playwright-report/index.html" class="btn">🎭 View Playwright Report</a>
+        </div>
+
+        <div class="footer">
+            <p>Copyright © Jade Business Solutions LLC.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('deploymentTime').textContent = new Date().toLocaleString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+    </script>
+</body>
+</html>
