@@ -148,10 +148,15 @@
             text-align: center;
         }
 
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
         .btn {
             display: block;
             padding: 12px 20px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             text-decoration: none;
             text-align: center;
@@ -160,6 +165,14 @@
             font-size: 0.9rem;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn.playwright {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .btn.allure {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
 
         .btn:hover {
@@ -183,7 +196,7 @@
             </svg>
         </div>
 
-        <h1>🎉 Deployment Successful!</h1>
+        <h1>Deployment Successful!</h1>
         <p class="subtitle">AI-Based Test Automation Framework is Live</p>
 
         <div class="info-grid">
@@ -204,7 +217,10 @@
 
         <div class="links-section">
             <h2>Quick Access</h2>
-            <a href="../playwright-report/index.html" class="btn">🎭 View Playwright Report</a>
+            <div class="button-grid">
+                <a href="../playwright-report/index.html" class="btn playwright">🎭 Playwright Report</a>
+                <a href="../allure-report/index.html" class="btn allure">📊 Allure Report</a>
+            </div>
         </div>
 
         <div class="footer">
