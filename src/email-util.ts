@@ -82,68 +82,41 @@ export async function sendEmailWithReport(
 
             cc: process.env.PWG_EMAIL_CC || '',
 
-            subject:
-                `${process.env.PWG_ENV_PROJECT || 'Project'} - Test Execution Completed | Pass: ${passCount} Fail: ${failCount}`,
+            subject: `${process.env.PWG_ENV_PROJECT || 'Project'}- Test Execution Completed. Pass-${passCount} Fail-${failCount}`,
 
             html: `
-            <html>
-            <body>
-            <h2>${process.env.PWG_ENV_SUITE_NAME || 'Test Suite'} Execution Summary</h2>
-
-            <table border="1" cellpadding="6" cellspacing="0">
-
-            <tr><td><b>Project</b></td><td>${process.env.PWG_ENV_PROJECT || ''}</td></tr>
-
-            <tr><td><b>Suite</b></td><td>${process.env.PWG_ENV_SUITE_NAME || ''}</td></tr>
-
-            <tr><td><b>Execution Host</b></td><td>${os.hostname()}</td></tr>
-
-            <tr><td><b>Executed By</b></td><td>${userName}</td></tr>
-
-            <tr><td><b>Start Time</b></td><td>${startTime}</td></tr>
-
-            <tr><td><b>End Time</b></td><td>${endTime}</td></tr>
-
-            <tr><td><b>Duration</b></td><td>${duration}</td></tr>
-
-            <tr><td><b>Total Tests</b></td><td>${totalTests}</td></tr>
-
-            <tr><td><b>Passed</b></td><td style="color:green">${passCount}</td></tr>
-
-            <tr><td><b>Failed</b></td><td style="color:red">${failCount}</td></tr>
-
-            <tr><td><b>Skipped</b></td><td>${skipCount}</td></tr>
-
-            <tr><td><b>Pass Rate</b></td><td>${passRate}</td></tr>
-
-            ${
-                process.env.CI
-                    ? `<tr>
-                       <td><b>Build</b></td>
-                       <td>
-                       <a href="${process.env.BUILD_URL}">
-                       #${process.env.BUILD_NUMBER}
-                       </a>
-                       </td>
-                       </tr>`
-                    : ''
-            }
-
-            <tr><td><b>Tool</b></td><td>Playwright</td></tr>
-
-            </table>
-
-            <br/>
-
-            <p>Please find attached execution report.</p>
-
-            <p><i>This is an auto-generated email.</i></p>
-
-            <p>Regards,<br/>Automation Team</p>
-
-            </body>
-            </html>
-            `,
+    <html>
+    <head>
+      <style>
+        table, th, td {
+          border: 1px solid black;
+        }
+      </style>
+    </head>
+    <body>
+      <h2>${process.env.PWG_ENV_SUITE_NAME || 'Test Suite'} Test Execution Summary</h2>
+      <p></p>
+      <table border='1' style='width:400px'>
+        <td colspan=2 bgcolor='#45ba4b' style="text-align:center"><b>Test Execution Status</b></td>
+        <tr><td>Suite</td><td>${process.env.PWG_ENV_SUITE_NAME || ''}</td></tr>
+        <tr><td>Project</td><td>${process.env.PWG_ENV_PROJECT || ''}</td></tr>
+        <tr><td>Execution Host</td><td>${os.hostname()}</td></tr>
+        <tr><td>Executed By</td><td>${userName}</td></tr>
+        <tr><td>StartTime</td><td>${startTime}</td></tr>
+        <tr><td>EndTime</td><td>${endTime}</td></tr>
+        <tr><td>Total Test Executed</td><td>${totalTests}</td></tr>
+        <tr><td>Pass</td><td>${passCount}</td></tr>
+        <tr><td>Fail</td><td>${failCount}</td></tr>
+        <tr><td>Skip</td><td>${skipCount}</td></tr>
+        <tr><td>PassRate</td><td>${passRate}</td></tr>
+        <tr><td>TotalTime</td><td>${duration}</td></tr>
+        ${process.env.CI ? `<tr><td>Build Tag</td><td><a href="${process.env.BUILD_URL}">#${process.env.BUILD_NUMBER}</a></td></tr>` : ''}
+        <tr><td>Tool</td><td>Playwright</td></tr>
+      </table>
+      <p>For more information, please find the attached Playwright report.<p>
+      Note- This is an auto-generated email. Do not reply to this email.</p><p>Regards,</p><p>AutomationTeam</p>
+    </body>
+    </html>`,
 
             attachments: attachmentExists
                 ? [{
