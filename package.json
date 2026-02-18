@@ -1,30 +1,55 @@
 {
-  "name": "demopoc",
+  "name": "enterprise-playwright-framework",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Enterprise Playwright Test Automation Framework — Protected Distribution",
+  "main": "dist/cli.js",
+  "bin": {
+    "epf": "./src/cli.ts"
+  },
   "scripts": {
     "clean:allure": "node -e \"const fs = require('fs'); const path = 'allure-results'; if (fs.existsSync(path)) { fs.rmSync(path, { recursive: true, force: true }); console.log('✅ Cleaned allure-results directory'); }\"",
     "clean:reports": "node -e \"const fs = require('fs'); ['allure-results', 'allure-report', 'playwright-report'].forEach(dir => { if (fs.existsSync(dir)) { fs.rmSync(dir, { recursive: true, force: true }); console.log('✅ Cleaned ' + dir); } });\"",
+    "clean:dist": "node -e \"const fs = require('fs'); if (fs.existsSync('dist')) { fs.rmSync('dist', { recursive: true, force: true }); console.log('✅ Cleaned dist directory'); }\"",
     "test": "npm run clean:allure && npx playwright test",
     "test:headed": "npm run clean:allure && npx playwright test --headed",
     "test:ui": "npx playwright test --ui",
+    "test:login": "npx playwright test src/tests/login.spec.ts",
+    "test:lead": "npx playwright test src/tests/lead.spec.ts",
+    "test:legacy": "npx playwright test tests/",
+    "build": "node scripts/build.js",
+    "build:obfuscate": "node scripts/build.js && node scripts/obfuscate.js",
+    "build:package": "node scripts/build.js && node scripts/obfuscate.js && node scripts/package.js",
+    "cli": "npx ts-node src/cli.ts",
+    "cli:run": "npx ts-node src/cli.ts run --skip-license",
+    "cli:license": "npx ts-node src/cli.ts license",
+    "cli:version": "npx ts-node src/cli.ts version",
     "allure:generate": "npx allure generate ./allure-results -o ./allure-report --clean",
     "allure:open": "npx allure open ./allure-report",
-    "allure:serve": "npx allure serve ./allure-results",
-    "allure:generate-direct": "allure generate ./allure-results -o ./allure-report --clean",
-    "allure:open-direct": "allure open ./allure-report"
+    "allure:serve": "npx allure serve ./allure-results"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "enterprise",
+    "framework"
+  ],
+  "author": "Jade Business Services",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
     "@types/dotenv": "^8.2.3",
     "@types/node": "^25.0.9",
     "allure-commandline": "^2.36.0",
     "allure-playwright": "^3.4.5",
-    "dotenv": "^17.3.1"
+    "dotenv": "^17.3.1",
+    "javascript-obfuscator": "^4.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "@types/nodemailer": "^7.0.9",

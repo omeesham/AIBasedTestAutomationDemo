@@ -1,0 +1,174 @@
+name: Build & Package Enterprise Framework
+
+on:
+  push:
+    branches: [main, release/*]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_obfuscation:
+        description: 'Skip code obfuscation (for debugging)'
+        required: false
+        default: 'false'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ────────────────────────────────────────────
+  # Job 1: Build + Test
+  # ────────────────────────────────────────────
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build, Test & Package
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Lint & Type Check
+        run: npx tsc --noEmit
+
+      # ── Build ──
+      - name: Build framework
+        run: node scripts/build.js
+
+      # ── Obfuscate ──
+      - name: Obfuscate source code
+        if: ${{ github.event.inputs.skip_obfuscation != 'true' }}
+        run: |
+          npm install javascript-obfuscator --save-dev
+          node scripts/obfuscate.js
+
+      # ── Run Tests (validation) ──
+      - name: Run tests
+        run: npx playwright test --project chromium
+        continue-on-error: true
+        env:
+          CI: true
+          PWG_ENV_PROJECT: 'Enterprise Framework CI'
+          PWG_ENV_SUITE_NAME: 'CI Validation Suite'
+
+      # ── Generate Reports ──
+      - name: Generate Allure report
+        if: always()
+        run: |
+          npm run allure:generate || true
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
+          retention-days: 30
+
+      # ── Package ──
+      - name: Package for distribution
+        run: node scripts/package.js
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+
+      - name: Upload distribution package
+        uses: actions/upload-artifact@v4
+        with:
+          name: enterprise-framework-dist
+          path: dist/enterprise-playwright-framework-v*.zip
+          retention-days: 90
+
+  # ────────────────────────────────────────────
+  # Job 2: Release (on tag push)
+  # ────────────────────────────────────────────
+  release:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Create Release
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download distribution package
+        uses: actions/download-artifact@v4
+        with:
+          name: enterprise-framework-dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: enterprise-playwright-framework-v*.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ────────────────────────────────────────────
+  # Job 3: Deploy to Artifact Storage (optional)
+  # ────────────────────────────────────────────
+  deploy-to-storage:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    name: Deploy to Artifact Storage
+
+    steps:
+      - name: Download distribution package
+        uses: actions/download-artifact@v4
+        with:
+          name: enterprise-framework-dist
+
+      # ── AWS S3 Upload (uncomment to enable) ──
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: us-east-1
+      #
+      # - name: Upload to S3
+      #   run: |
+      #     aws s3 cp enterprise-playwright-framework-v*.zip \
+      #       s3://${{ secrets.S3_BUCKET }}/frameworks/latest/ \
+      #       --acl private
+
+      # ── Azure Blob Upload (uncomment to enable) ──
+      # - name: Upload to Azure Blob Storage
+      #   uses: azure/CLI@v2
+      #   with:
+      #     inlineScript: |
+      #       az storage blob upload \
+      #         --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+      #         --container-name frameworks \
+      #         --name latest/enterprise-playwright-framework.zip \
+      #         --file enterprise-playwright-framework-v*.zip \
+      #         --overwrite
+
+      - name: Deployment placeholder
+        run: |
+          echo "📦 Package ready for deployment to artifact storage"
+          echo "   Configure AWS S3 or Azure Blob Storage secrets to enable"
+          ls -la enterprise-playwright-framework-v*.zip

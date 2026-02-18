@@ -1,7 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/**
+ * Enterprise Playwright Framework Configuration
+ * 
+ * testDir points to src/tests/ (enterprise POM structure).
+ * Legacy tests remain in ./tests/ and can be run via:
+ *   npx playwright test tests/
+ */
 export default defineConfig({
-  testDir: './tests',
+  testDir: './src/tests',
   /* Test timeout */
   timeout: 300000, // 5 minutes per test
   /* Expect timeout */

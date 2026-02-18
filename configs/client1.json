@@ -1,0 +1,19 @@
+{
+    "clientId": "CLIENT001",
+    "clientName": "Demo Client 1",
+    "projectName": "DemoProject",
+    "suiteName": "DemoProject UI Test Suite",
+    "suiteDescription": "Regression Testing",
+    "crmUrl": "https://demo.us.espocrm.com/",
+    "headless": false,
+    "workers": 1,
+    "retries": 0,
+    "timeout": 300000,
+    "browsers": ["chromium"],
+    "reporters": ["line", "html", "allure-playwright"],
+    "allureEnabled": true,
+    "emailReportEnabled": true,
+    "smtpHost": "smtp.gmail.com",
+    "smtpPort": 587,
+    "smtpSecure": false
+}

@@ -1,0 +1,19 @@
+{
+    "clientId": "CLIENT002",
+    "clientName": "Enterprise Client 2",
+    "projectName": "Enterprise CRM Testing",
+    "suiteName": "Enterprise Regression Suite",
+    "suiteDescription": "Full Regression Testing - Production",
+    "crmUrl": "https://crm.enterprise-client.com/",
+    "headless": true,
+    "workers": 3,
+    "retries": 2,
+    "timeout": 600000,
+    "browsers": ["chromium", "firefox"],
+    "reporters": ["line", "html", "allure-playwright"],
+    "allureEnabled": true,
+    "emailReportEnabled": true,
+    "smtpHost": "smtp.gmail.com",
+    "smtpPort": 587,
+    "smtpSecure": false
+}

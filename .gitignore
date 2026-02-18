@@ -1,18 +1,55 @@
+# ══════════════════════════════════════════════
+# Enterprise Playwright Framework — .gitignore
+# ══════════════════════════════════════════════
 
-# Playwright
-/.env/
-/node_modules/
-/allure-report/
-/allure-results/
-/test-results/
-/playwright-report/
-/blob-report/
+# ── Dependencies ──
+node_modules/
+package-lock.json
+
+# ── Build Output (AUTO GENERATED — protected) ──
+dist/
+
+# ── Test Results & Reports ──
+test-results/
+playwright-report/
+allure-results/
+allure-report/
+blob-report/
+output/
+
+# ── Playwright Cache ──
 /playwright/.cache/
 /playwright/.auth/
 
-# Playwright
-node_modules/
+# ── Environment & Secrets ──
+.env
+*.env
+!.env.example
 
-# GitHub Actions and Agents
-.github/agents/
-.github/workflows/
+# ── License Files (client-specific) ──
+license.json
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──
+*.log
+npm-debug.log*
+
+# ── Data exports (generated at runtime) ──
+Data/LeadsExport.xlsx
+Data/newLeadLast7Days.html
+
+# ── Temporary ──
+*.tmp
+*.temp
+.cache/
